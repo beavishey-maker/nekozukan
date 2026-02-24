@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>猫の詳細 - ねこずかん</title>
+  <meta name="description" content="猫の品種詳細ページ">
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    /* ========== 猫詳細ページ専用スタイル ========== */
+    .cat-hero {
+      background: linear-gradient(135deg, var(--pink-pale) 0%, var(--lav-pale) 100%);
+      padding: 3rem 0 2rem;
+    }
+    .cat-hero-inner {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3rem;
+      align-items: center;
+    }
+    .cat-hero-img {
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow: 0 12px 40px rgba(192,132,252,0.25);
+      aspect-ratio: 4/3;
+      background: var(--lav-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 6rem;
+    }
+    .cat-hero-img img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .cat-hero-info { display: flex; flex-direction: column; gap: 1rem; }
+    .cat-breadcrumb {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .cat-breadcrumb a { color: var(--pink); }
+    .cat-breadcrumb a:hover { text-decoration: underline; }
+    .cat-name-ja {
+      font-size: 2.4rem;
+      font-weight: 800;
+      color: var(--text);
+      line-height: 1.2;
+    }
+    .cat-name-en {
+      font-size: 1rem;
+      color: var(--text-muted);
+      font-weight: 500;
+      margin-top: -0.5rem;
+    }
+    .cat-origin-row {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .cat-badge-lg {
+      background: var(--white);
+      border: 2px solid var(--border);
+      border-radius: 100px;
+      padding: 0.4rem 1rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .cat-traits-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    .cat-trait {
+      background: linear-gradient(135deg, var(--pink-pale), var(--lav-pale));
+      border: 1.5px solid var(--pink-light);
+      color: var(--pink);
+      border-radius: 100px;
+      padding: 0.35rem 0.9rem;
+      font-size: 0.85rem;
+      font-weight: 700;
+    }
+    .cat-recommend-box {
+      background: linear-gradient(135deg, #fff9c4, #fffde7);
+      border: 2px solid #FCD34D;
+      border-radius: 16px;
+      padding: 0.8rem 1.2rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #6B5B00;
+    }
+
+    /* ========== 詳細セクション ========== */
+    .cat-detail-section {
+      padding: 3rem 0;
+    }
+    .cat-detail-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 2rem;
+      align-items: start;
+    }
+    .cat-desc-card {
+      background: var(--white);
+      border: 2px solid var(--border);
+      border-radius: 24px;
+      padding: 2rem;
+    }
+    .cat-desc-card h2 {
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: var(--text);
+      margin-bottom: 1rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 2px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .cat-desc-text {
+      line-height: 1.9;
+      color: var(--text);
+      font-size: 1rem;
+    }
+
+    /* スペックカード */
+    .cat-spec-card {
+      background: var(--white);
+      border: 2px solid var(--border);
+      border-radius: 24px;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+    .cat-spec-card h2 {
+      font-size: 1rem;
+      font-weight: 800;
+      color: var(--text);
+      margin-bottom: 1rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 2px solid var(--border);
+    }
+    .spec-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.75rem 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.9rem;
+      gap: 0.5rem;
+    }
+    .spec-row:last-child { border-bottom: none; }
+    .spec-label { color: var(--text-muted); font-weight: 600; white-space: nowrap; }
+    .spec-value { color: var(--text); font-weight: 700; text-align: right; }
+
+    /* ========== ギャラリー ========== */
+    .cat-gallery-section {
+      padding: 2rem 0 3rem;
+      background: linear-gradient(180deg, var(--white) 0%, var(--pink-pale) 100%);
+    }
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+    .gallery-item {
+      border-radius: 16px;
+      overflow: hidden;
+      aspect-ratio: 1;
+      background: var(--lav-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3rem;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      box-shadow: var(--shadow);
+    }
+    .gallery-item:hover { transform: scale(1.03); box-shadow: var(--shadow-hover); }
+    .gallery-item img { width: 100%; height: 100%; object-fit: cover; }
+
+    /* ========== 関連品種 ========== */
+    .related-section { padding: 2rem 0 4rem; }
+    .related-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+    .related-card {
+      background: var(--white);
+      border: 2px solid var(--border);
+      border-radius: 20px;
+      padding: 1.2rem;
+      text-align: center;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+      text-decoration: none;
+      color: var(--text);
+      display: block;
+    }
+    .related-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-hover);
+      border-color: var(--pink-light);
+    }
+    .related-card-img {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: var(--lav-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.5rem;
+      margin: 0 auto 0.75rem;
+      overflow: hidden;
+    }
+    .related-card-img img { width: 100%; height: 100%; object-fit: cover; }
+    .related-card-name { font-weight: 700; font-size: 0.9rem; }
+    .related-card-en { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.2rem; }
+
+    /* ========== 戻るボタン ========== */
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--white);
+      border: 2px solid var(--border);
+      border-radius: 100px;
+      padding: 0.6rem 1.2rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text);
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-bottom: 1.5rem;
+    }
+    .back-btn:hover { border-color: var(--pink); color: var(--pink); }
+
+    /* ========== セクション見出し ========== */
+    .section-heading {
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* ========== レスポンシブ ========== */
+    @media (max-width: 768px) {
+      .cat-hero-inner { grid-template-columns: 1fr; gap: 1.5rem; }
+      .cat-name-ja { font-size: 1.8rem; }
+      .cat-detail-grid { grid-template-columns: 1fr; }
+      .related-grid { grid-template-columns: repeat(2, 1fr); }
+      .gallery-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ========== ヘッダー ========== -->
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="../index.html" class="site-logo"><span class="paw">🐱</span> ねこずかん</a>
+      <nav class="header-nav">
+        <a href="../index.html#zukan" class="nav-link">図鑑</a>
+        <a href="../index.html#community" class="nav-link">コミュニティ</a>
+        <div id="nav-guest">
+          <a href="login.html" class="btn btn-primary">ログイン</a>
+        </div>
+        <div id="nav-user" class="user-info" style="display:none">
+          <span class="user-greeting">こんにちは、<strong id="nav-username"></strong>さん</span>
+          <a href="post.html" class="btn btn-primary">＋ 投稿する</a>
+          <a href="mypage.html" class="btn btn-ghost">マイページ</a>
+          <button class="btn btn-outline" id="logout-btn">ログアウト</button>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ========== 猫ヒーロー ========== -->
+  <section class="cat-hero">
+    <div class="container">
+      <button class="back-btn" onclick="history.back()">← 図鑑に戻る</button>
+      <div class="cat-hero-inner">
+        <div class="cat-hero-img" id="cat-main-img">
+          <!-- JS で挿入 -->
+        </div>
+        <div class="cat-hero-info">
+          <div class="cat-breadcrumb">
+            <a href="../index.html">トップ</a> › <a href="../index.html#zukan">図鑑</a> › <span id="bread-name"></span>
+          </div>
+          <h1 class="cat-name-ja" id="cat-name-ja"></h1>
+          <p class="cat-name-en" id="cat-name-en"></p>
+          <div class="cat-origin-row" id="cat-origin-row"></div>
+          <div class="cat-traits-row" id="cat-traits-row"></div>
+          <div class="cat-recommend-box" id="cat-recommend-box" style="display:none">
+            💡 <span id="cat-recommend-text"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 詳細説明 ========== -->
+  <section class="cat-detail-section">
+    <div class="container">
+      <div class="cat-detail-grid">
+        <div class="cat-desc-card">
+          <h2>📖 品種の特徴</h2>
+          <p class="cat-desc-text" id="cat-desc-text"></p>
+        </div>
+        <div class="cat-spec-card">
+          <h2>📋 基本スペック</h2>
+          <div id="spec-list"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 関連品種 ========== -->
+  <section class="related-section">
+    <div class="container">
+      <p class="section-heading">🐾 他の品種も見る</p>
+      <div class="related-grid" id="related-grid"></div>
+    </div>
+  </section>
+
+  <!-- ========== フッター ========== -->
+  <footer class="site-footer">
+    <p>🐱 ねこずかん &copy; 2025 | 猫好きのための図鑑＆コミュニティ</p>
+  </footer>
+
+  <script>
+    // ========== 全猫データ（index.html と同期） ==========
+    const CATS = [
+      { id: 'american-shorthair', name: 'アメリカン・ショートヘア', en: 'American Shorthair', emoji: '🐱',
+        origin: 'アメリカ', weight: '3〜7kg（中型）', life: '15〜20年', coat: '短毛',
+        traits: ['温厚', '社交的', '丈夫'],
+        desc: 'アメリカで最も人気のある猫品種のひとつ。もともとはヨーロッパからアメリカに渡った作業猫が祖先で、丈夫で健康的な体が特徴です。丸みのある顔とシルバータビーをはじめとする美しい縞模様が魅力で、温厚で社交的な性格から子どもや他のペットとも仲良くなれます。独立心もあり、適度に一人の時間を過ごせる大人びた一面も。初めて猫を飼う方にも最適な品種です。',
+        recommend: '初めて猫を飼う人・子どもがいる家庭' },
+      { id: 'scottish-fold-emoji', name: 'スコティッシュ・フォールド', en: 'Scottish Fold', emoji: '😸',
+        origin: 'スコットランド', weight: '3〜6kg（中型）', life: '11〜15年', coat: '短毛・長毛',
+        traits: ['穏やか', 'マイペース', '甘えん坊'],
+        desc: '前に折れ曲がった耳が最大の特徴で、まるでぬいぐるみのような愛らしい顔立ちが世界中で人気。「お相撲座り」と呼ばれる、後ろ脚を前に投げ出した独特の座り方でSNSでも話題です。穏やかでマイペースな性格ですが、飼い主に甘えることも大好き。静かな環境を好み、室内飼いに向いています。',
+        recommend: '一人暮らし・静かな環境が好きな人' },
+      { id: 'norwegian-forest', name: 'ノルウェージャン・フォレスト', en: 'Norwegian Forest Cat', emoji: '🦁',
+        origin: 'ノルウェー', weight: '4〜9kg（大型）', life: '14〜16年', coat: '長毛',
+        traits: ['独立心', '活発', '大型'],
+        desc: '北欧ノルウェーの厳しい自然の中で生き抜いてきた、たくましくも美しい大型猫。防水効果のある二重構造の長毛と太く長いしっぽが特徴で、冬の寒さにも対応できる被毛を持ちます。木登りや高いところが大好きで、運動能力が非常に高い。独立心がありながらも家族には穏やかで、犬のように遊びに付き合ってくれることもあります。',
+        recommend: '活発な猫が好きな人・広い家に住んでいる人' },
+      { id: 'bengal', name: 'ベンガル', en: 'Bengal', emoji: '🐆',
+        origin: 'アメリカ', weight: '4〜8kg（中〜大型）', life: '12〜16年', coat: '短毛',
+        traits: ['活発', '知的', 'ワイルド'],
+        desc: 'アジアヤマネコとイエネコを交配させて生まれた、野生の豹を思わせるエキゾチックな品種。スポットやマーブル模様のグリテリーと呼ばれる輝く被毛が最大の特徴です。非常に知的で好奇心旺盛、活動量が多いため刺激的な遊びが大好き。水を怖がらないことでも知られ、水遊びをする子も。知性を活かした知育玩具が効果的です。',
+        recommend: '活発な猫が好きな人・毎日たっぷり遊べる人' },
+      { id: 'siamese', name: 'サイアミーズ', en: 'Siamese', emoji: '🗣️',
+        origin: 'タイ', weight: '3〜5kg（中型）', life: '15〜20年', coat: '短毛',
+        traits: ['おしゃべり', '社交的', '甘えん坊'],
+        desc: 'タイ（旧シャム）原産の世界最古の猫品種のひとつ。ブルーの目と顔・耳・手足・しっぽに現れる濃い「ポイント」カラーが美しく、スタイリッシュなシルエットが魅力です。非常におしゃべりで感情表現が豊かで、飼い主と会話を楽しむように鳴きます。甘えん坊で寂しがり屋な一面もあり、長時間の留守番は苦手。愛情深い家庭での飼育が向いています。',
+        recommend: 'たくさんコミュニケーションをとりたい人' },
+      { id: 'maine-coon', name: 'メインクーン', en: 'Maine Coon', emoji: '🦊',
+        origin: 'アメリカ（メイン州）', weight: '5〜10kg（大型）', life: '12〜15年', coat: '長毛',
+        traits: ['大型', 'フレンドリー', '犬っぽい'],
+        desc: 'アメリカ最古の猫品種であり、世界最大の猫品種のひとつ。ふさふさの長毛、房毛のついた大きな耳、太くて長いしっぽが特徴的です。「犬のような猫」と呼ばれるほど飼い主に忠実で、散歩に連れて行ける子もいるほど。温厚でフレンドリーな性格から子どもや他のペットともすぐに仲良くなれます。成熟が遅く4〜5歳まで成長が続く珍しい品種でもあります。',
+        recommend: '大型猫が好きな人・大家族' },
+      { id: 'ragdoll', name: 'ラグドール', en: 'Ragdoll', emoji: '😻',
+        image: '../images/neko.jpg',
+        origin: 'アメリカ', weight: '5〜9kg（大型）', life: '12〜17年', coat: '長毛',
+        traits: ['🧸 おとなしい', '甘えん坊', '室内向き'],
+        desc: '「抱き人形」という名前の通り、抱き上げると全身の力を抜いてぐったりリラックスする、世界でも珍しい猫。宝石のような澄んだブルーの瞳と、顔・耳・手足に現れる濃いポイントカラーが美しい大型猫です。おとなしく攻撃性が低いため、子どもや他のペットとも仲良くできます。鳴き声が小さく、静かな環境を好む室内飼い向きの品種。まったりと穏やかな毎日を一緒に過ごせます。',
+        recommend: 'まったりしたい人・初めて猫を飼う人' },
+      { id: 'munchkin', name: 'マンチカン', en: 'Munchkin', emoji: '🐾',
+        image: '../images/munchkin.jpg',
+        origin: 'アメリカ', weight: '2〜4kg（小〜中型）', life: '12〜15年', coat: '短毛・長毛',
+        traits: ['🎀 活発', '人懐こい', '好奇心旺盛'],
+        desc: '短い脚がトレードマークの「猫界のダックスフント」。遺伝子の自然突然変異によって生まれた品種で、1991年にニューヨークで初めて公式に紹介されました。短足でも走ったりジャンプしたりと活発で、おもちゃで遊ぶのが大好き。人懐こく好奇心旺盛で、家族全員に愛嬌を振りまきます。三毛・茶トラ・白など毛色のバリエーションが豊富で、短毛・長毛の両方が存在します。',
+        recommend: 'にぎやかな家族・子どもがいる家庭' },
+      { id: 'siberian', name: 'サイベリアン', en: 'Siberian', emoji: '❄️',
+        image: '../images/siberian.jpg',
+        origin: 'ロシア（シベリア地方）', weight: '5〜8kg（大型）', life: '12〜15年', coat: '長毛',
+        traits: ['❄️ 勇敢', '穏やか', '低アレルゲン'],
+        desc: 'シベリアの極寒の大地で自然に生まれた、ロシア最古の猫種のひとつ。防水性の高い三層構造の被毛は、氷点下でも体を守れるほど密度が高く、触るとふかふかです。見た目は野性的ですが性格は穏やかで忠実。犬のように飼い主の後をついて歩くこともあります。アレルゲンのFel d 1タンパク質の分泌量が少なく、猫アレルギーの人でも飼えるケースがある「低アレルゲン猫」としても注目されています。',
+        recommend: '猫アレルギーが心配な人・大型猫が好きな人' },
+      { id: 'scottish', name: 'スコティッシュフォールド', en: 'Scottish Fold', emoji: '😸',
+        image: '../images/scottish.jpg',
+        origin: 'スコットランド', weight: '3〜6kg（中型）', life: '11〜15年', coat: '短毛・長毛',
+        traits: ['😊 温厚', 'マイペース', '適応力高い'],
+        desc: '前に折れ曲がった耳が最大の特徴で、まるでぬいぐるみのような愛らしい顔立ちが人気。「お相撲座り（スプロール座り）」と呼ばれる、後ろ脚を前に投げ出した独特の座り方でSNSを席巻しました。穏やかで適応力が高く、一人暮らしにも家族にも合いやすい万能な品種。丸い顔・丸い目・折れ耳の三拍子が揃ったビジュアルは、世界中のSNSで最も人気のある猫種のひとつです。',
+        recommend: '一人暮らし・のんびりした雰囲気が好きな人' },
+      { id: 'minuet', name: 'ミヌエット', en: 'Minuet（旧：ナポレオン）', emoji: '👑',
+        image: '../images/minuet.jpg',
+        origin: 'アメリカ', weight: '3〜5kg（小〜中型）', life: '12〜15年', coat: '長毛・半長毛',
+        traits: ['👑 おっとり', '甘えん坊', '室内向き'],
+        desc: 'ペルシャのゴージャスな長毛と丸い顔、マンチカンの短い脚を掛け合わせて誕生した比較的新しい品種。クリーム・ホワイト・オレンジなどパステルカラーの被毛が多く、まるでぬいぐるみのような愛らしい見た目が特徴です。ペルシャ譲りの穏やかでのんびりした気質と、マンチカン譲りの好奇心と人懐こさを兼ね備えています。激しく動き回るよりも、ソファや膝の上でまったり過ごすことを好む室内飼い向きの品種です。',
+        recommend: 'まったり派・ふわふわ系の猫が好きな人・室内でのんびり一緒に過ごしたい人' },
+    ];
+
+    // ========== URLパラメータから猫IDを取得 ==========
+    const params = new URLSearchParams(location.search);
+    const catId = params.get('id');
+    const cat = CATS.find(c => c.id === catId);
+
+    if (!cat) {
+      // IDが見つからなければトップに戻す
+      location.href = '../index.html#zukan';
+    } else {
+      // ページタイトル
+      document.title = `${cat.name} - ねこずかん`;
+
+      // ========== ヒーロー画像 ==========
+      const imgEl = document.getElementById('cat-main-img');
+      if (cat.image) {
+        imgEl.innerHTML = `<img src="${cat.image}" alt="${cat.name}">`;
+      } else {
+        imgEl.textContent = cat.emoji;
+      }
+
+      // ========== テキスト ==========
+      document.getElementById('bread-name').textContent = cat.name;
+      document.getElementById('cat-name-ja').textContent = cat.name;
+      document.getElementById('cat-name-en').textContent = cat.en;
+
+      // origin / weight
+      const originRow = document.getElementById('cat-origin-row');
+      if (cat.origin) originRow.innerHTML += `<span class="cat-badge-lg">🌍 ${cat.origin}</span>`;
+      if (cat.weight) originRow.innerHTML += `<span class="cat-badge-lg">⚖️ ${cat.weight}</span>`;
+
+      // traits
+      const traitsRow = document.getElementById('cat-traits-row');
+      cat.traits.forEach(t => {
+        const span = document.createElement('span');
+        span.className = 'cat-trait';
+        span.textContent = t;
+        traitsRow.appendChild(span);
+      });
+
+      // recommend
+      if (cat.recommend) {
+        document.getElementById('cat-recommend-box').style.display = 'block';
+        document.getElementById('cat-recommend-text').textContent = `こんな人におすすめ：${cat.recommend}`;
+      }
+
+      // desc
+      document.getElementById('cat-desc-text').textContent = cat.desc;
+
+      // ========== スペックリスト ==========
+      const specList = document.getElementById('spec-list');
+      const specs = [
+        { label: '🌍 原産国', value: cat.origin },
+        { label: '⚖️ 体重', value: cat.weight },
+        { label: '🕰️ 平均寿命', value: cat.life },
+        { label: '✂️ 被毛タイプ', value: cat.coat },
+      ];
+      specs.forEach(s => {
+        if (!s.value) return;
+        const row = document.createElement('div');
+        row.className = 'spec-row';
+        row.innerHTML = `<span class="spec-label">${s.label}</span><span class="spec-value">${s.value}</span>`;
+        specList.appendChild(row);
+      });
+
+      // ========== 関連品種（自分以外からランダム4匹） ==========
+      const others = CATS.filter(c => c.id !== cat.id);
+      const related = others.sort(() => Math.random() - 0.5).slice(0, 4);
+      const relatedGrid = document.getElementById('related-grid');
+      related.forEach(r => {
+        const a = document.createElement('a');
+        a.className = 'related-card';
+        a.href = `cat.html?id=${r.id}`;
+        const imgContent = r.image
+          ? `<img src="${r.image}" alt="${r.name}">`
+          : r.emoji;
+        a.innerHTML = `
+          <div class="related-card-img">${r.image ? `<img src="${r.image}" alt="${r.name}">` : r.emoji}</div>
+          <p class="related-card-name">${r.name}</p>
+          <p class="related-card-en">${r.en}</p>
+        `;
+        relatedGrid.appendChild(a);
+      });
+    }
+
+    // ========== ナビ認証状態（簡易） ==========
+    // auth.js を使う場合は import に切り替えてください
+    // ここでは未ログイン表示のみ（Supabase設定後に対応）
+    document.getElementById('nav-guest').style.display = 'flex';
+    document.getElementById('nav-user').style.display = 'none';
+  </script>
+</body>
+</html>

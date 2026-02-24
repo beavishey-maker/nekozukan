@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ねこずかん - 猫の図鑑＆コミュニティ</title>
+  <meta name="description" content="猫の品種図鑑と、みんなの猫写真が集まるコミュニティサイト">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- ========== ヘッダー ========== -->
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="index.html" class="site-logo"><span class="paw">🐱</span> ねこずかん</a>
+      <nav class="header-nav">
+        <a href="#zukan" class="nav-link">図鑑</a>
+        <a href="#community" class="nav-link">コミュニティ</a>
+        <a href="pages/post.html" class="btn btn-primary">＋ 投稿する</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ========== ヒーロー ========== -->
+  <section class="hero">
+    <div class="container">
+      <span class="hero-eyebrow">🐾 猫好きのための場所</span>
+      <h1>
+        <span class="hero-gradient">ねこずかん</span><br>
+        猫図鑑＆フォトコミュニティ
+      </h1>
+      <p>猫の品種を調べたり、あなたの愛猫の写真をみんなとシェアしよう</p>
+      <div class="hero-actions">
+        <a href="#community" class="btn btn-primary">みんなの猫を見る</a>
+        <a href="#zukan" class="btn btn-outline">図鑑を見る</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== ねこ図鑑 ========== -->
+  <section class="section" id="zukan">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-badge">📚 図鑑</div>
+        <h2 class="section-title">ねこずかん</h2>
+        <p class="section-sub">人気の猫品種をご紹介します</p>
+      </div>
+      <div class="zukan-invite-banner">
+        <span class="invite-banner-emoji">📷</span>
+        <div class="invite-banner-text">
+          <strong>地域の猫も大募集！</strong>
+          <span>あなたの愛猫の写真を投稿して、みんなに紹介しよう</span>
+        </div>
+        <a href="pages/post.html" class="btn btn-primary">投稿する →</a>
+      </div>
+      <div class="zukan-grid" id="zukan-grid"></div>
+    </div>
+  </section>
+
+  <!-- ========== コミュニティ ========== -->
+  <section class="section feed-section" id="community">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-badge">📸 コミュニティ</div>
+        <h2 class="section-title">みんなの猫フォト</h2>
+        <p class="section-sub">ユーザーが投稿した愛猫の写真たち</p>
+      </div>
+
+      <div class="feed-controls">
+        <div class="sort-tabs">
+          <button class="sort-tab active" data-order="new">🕐 新着順</button>
+          <button class="sort-tab" data-order="likes">💗 いいね順</button>
+        </div>
+      </div>
+
+      <div class="post-grid" id="post-grid">
+        <!-- カードがここに挿入される -->
+      </div>
+
+      <div class="feed-empty" id="feed-empty" style="display:none">
+        <div class="emoji">🐱</div>
+        <p>まだ投稿がありません。最初の投稿者になろう！</p>
+        <a href="pages/post.html" class="btn btn-primary" style="margin-top:1rem">投稿する</a>
+      </div>
+
+      <div class="load-more-wrap" id="load-more-wrap" style="display:none">
+        <button class="btn btn-outline" id="load-more-btn">もっと見る</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== フッター ========== -->
+  <footer class="site-footer">
+    <p>🐱 ねこずかん &copy; 2025 | 猫好きのための図鑑＆コミュニティ</p>
+  </footer>
+
+  <script type="module">
+    import { fetchPosts, createPostCard, showToast } from './js/feed.js';
+
+    // ========== 図鑑データ ==========
+    const CATS = [
+      // --- 既存6匹（絵文字カード） ---
+      { id: 'american-shorthair', name: 'アメリカン・ショートヘア', en: 'American Shorthair', emoji: '🐱', desc: '丸みのある顔と縞模様が特徴。温厚で社交的な性格。初めて猫を飼う方にもおすすめ。', traits: ['温厚', '社交的', '丈夫'] },
+      { id: 'scottish-fold-emoji', name: 'スコティッシュ・フォールド', en: 'Scottish Fold', emoji: '😸', desc: '耳が前に折れ曲がった独特の見た目が人気。穏やかでマイペースな性格。', traits: ['穏やか', 'マイペース', '甘えん坊'] },
+      { id: 'norwegian-forest', name: 'ノルウェージャン・フォレスト', en: 'Norwegian Forest Cat', emoji: '🦁', desc: '長くふわふわの被毛を持つ大型猫。独立心が強く、自然の中が大好き。', traits: ['独立心', '活発', '大型'] },
+      { id: 'bengal', name: 'ベンガル', en: 'Bengal', emoji: '🐆', desc: 'ヒョウ柄のような斑点模様が特徴的。知的で活発、遊び好き。', traits: ['活発', '知的', 'ワイルド'] },
+      { id: 'siamese', name: 'サイアミーズ', en: 'Siamese', emoji: '🗣️', desc: '青い目と色ポイントの模様が美しい。おしゃべりで感情表現が豊か。', traits: ['おしゃべり', '社交的', '甘えん坊'] },
+      { id: 'maine-coon', name: 'メインクーン', en: 'Maine Coon', emoji: '🦊', desc: '世界最大の猫品種のひとつ。犬のように忠実でフレンドリー。', traits: ['大型', 'フレンドリー', '犬っぽい'] },
+      // --- 写真付き詳細カード ---
+      {
+        id: 'ragdoll', name: 'ラグドール', en: 'Ragdoll', image: 'images/neko.jpg', emoji: '😻',
+        origin: 'アメリカ', weight: '5〜9kg（大型）',
+        traits: ['🧸 おとなしい', '甘えん坊', '室内向き'],
+        desc: '「抱き人形」という名前の通り、抱き上げると全身の力を抜いてぐったりリラックスする世界でも珍しい猫。宝石のような澄んだブルーの瞳と、顔・耳・手足に現れる濃いポイントカラーが美しい。おとなしく攻撃性が低く、鳴き声も小さい室内飼い向きの品種。',
+        recommend: 'まったりしたい人・初めて猫を飼う人',
+      },
+      {
+        id: 'munchkin', name: 'マンチカン', en: 'Munchkin', image: 'images/munchkin.jpg', emoji: '🐾',
+        origin: 'アメリカ', weight: '2〜4kg（小〜中型）',
+        traits: ['🎀 活発', '人懐こい', '好奇心旺盛'],
+        desc: '短い脚がトレードマークの「猫界のダックスフント」。遺伝子の自然突然変異によって生まれた品種。短足でも走ったりジャンプしたりと活発で、おもちゃで遊ぶのが大好き。人懐こく好奇心旺盛で、家族全員に愛嬌を振りまく。',
+        recommend: 'にぎやかな家族・子どもがいる家庭',
+      },
+      {
+        id: 'siberian', name: 'サイベリアン', en: 'Siberian', image: 'images/siberian.jpg', emoji: '❄️',
+        origin: 'ロシア（シベリア地方）', weight: '5〜8kg（大型）',
+        traits: ['❄️ 勇敢', '穏やか', '低アレルゲン'],
+        desc: 'シベリアの極寒の大地で自然に生まれた、ロシア最古の猫種のひとつ。防水性の高い三層構造の被毛が特徴。見た目は野性的だが性格は穏やかで忠実。アレルゲンのFel d 1タンパク質の分泌量が少なく、猫アレルギーの人でも飼えるケースがある「低アレルゲン猫」としても知られる。',
+        recommend: '猫アレルギーが心配な人・大型猫が好きな人',
+      },
+      {
+        id: 'scottish', name: 'スコティッシュフォールド', en: 'Scottish Fold', image: 'images/scottish.jpg', emoji: '😸',
+        origin: 'スコットランド', weight: '3〜6kg（中型）',
+        traits: ['😊 温厚', 'マイペース', '適応力高い'],
+        desc: '前に折れ曲がった耳が最大の特徴で、まるでぬいぐるみのような愛らしい顔立ちが人気。「お相撲座り」と呼ばれる、後ろ脚を前に投げ出した独特の座り方が有名。穏やかで適応力が高く、一人暮らしにも家族にも合いやすい万能な品種。',
+        recommend: '一人暮らし・のんびりした雰囲気が好きな人',
+      },
+      {
+        id: 'minuet', name: 'ミヌエット', en: 'Minuet（旧：ナポレオン）', image: 'images/minuet.jpg', emoji: '👑',
+        origin: 'アメリカ', weight: '3〜5kg（小〜中型）',
+        traits: ['👑 おっとり', '甘えん坊', '室内向き'],
+        desc: 'ペルシャのゴージャスな長毛と丸い顔、マンチカンの短い脚を掛け合わせて誕生した比較的新しい品種。パステルカラーの被毛がぬいぐるみのよう。ペルシャ譲りの穏やかな気質とマンチカン譲りの好奇心と人懐こさを兼ね備え、ソファや膝の上でまったり過ごすのが好き。',
+        recommend: 'まったり派・ふわふわ系の猫が好きな人',
+      },
+    ];
+
+    function renderZukan() {
+      const grid = document.getElementById('zukan-grid');
+      CATS.forEach(cat => {
+        const card = document.createElement('div');
+        card.className = 'zukan-card';
+
+        const imgContent = cat.image
+          ? `<img src="${cat.image}" alt="${cat.name}" loading="lazy">`
+          : `<span>${cat.emoji}</span>`;
+
+        const metaHtml = (cat.origin || cat.weight) ? `
+          <div class="zukan-card-meta">
+            ${cat.origin ? `<span class="zukan-meta-item">🌍 ${cat.origin}</span>` : ''}
+            ${cat.weight ? `<span class="zukan-meta-item">⚖️ ${cat.weight}</span>` : ''}
+          </div>` : '';
+
+        const recommendHtml = cat.recommend
+          ? `<p class="zukan-card-recommend">💡 ${cat.recommend}</p>` : '';
+
+        card.innerHTML = `
+          <div class="zukan-card-img">${imgContent}</div>
+          <div class="zukan-card-body">
+            <h3 class="zukan-card-name">${cat.name}</h3>
+            <p class="zukan-card-en">${cat.en}</p>
+            ${metaHtml}
+            <p class="zukan-card-desc">${cat.desc}</p>
+            <div class="zukan-card-traits">${cat.traits.map(t => `<span class="trait-badge">${t}</span>`).join('')}</div>
+            ${recommendHtml}
+            <a href="pages/cat.html?id=${cat.id}" class="zukan-card-link">くわしく見る →</a>
+          </div>
+        `;
+
+        // 画像読み込み失敗時のフォールバック
+        if (cat.image) {
+          const img = card.querySelector('.zukan-card-img img');
+          img.addEventListener('error', () => {
+            img.parentElement.innerHTML = `<span>${cat.emoji}</span>`;
+          });
+        }
+
+        // カード全体クリックでも詳細ページへ
+        card.style.cursor = 'pointer';
+        card.addEventListener('click', (e) => {
+          if (!e.target.closest('a')) {
+            location.href = `pages/cat.html?id=${cat.id}`;
+          }
+        });
+
+        grid.appendChild(card);
+      });
+    }
+
+    // ========== フィード ==========
+    let currentOrder = 'new';
+    let offset = 0;
+    let loading = false;
+
+    async function loadFeed(reset = false) {
+      if (loading) return;
+      loading = true;
+      if (reset) {
+        offset = 0;
+        document.getElementById('post-grid').innerHTML = '';
+        document.getElementById('feed-empty').style.display = 'none';
+        document.getElementById('load-more-wrap').style.display = 'none';
+      }
+      const loadMoreBtn = document.getElementById('load-more-btn');
+      if (loadMoreBtn) { loadMoreBtn.disabled = true; loadMoreBtn.textContent = '読み込み中...'; }
+
+      const posts = await fetchPosts({ offset, orderBy: currentOrder });
+      const grid = document.getElementById('post-grid');
+      posts.forEach(post => { grid.appendChild(createPostCard(post)); });
+
+      if (reset && posts.length === 0) document.getElementById('feed-empty').style.display = 'block';
+      offset += posts.length;
+      const loadMoreWrap = document.getElementById('load-more-wrap');
+      if (posts.length === 12) {
+        loadMoreWrap.style.display = 'block';
+        loadMoreBtn.disabled = false;
+        loadMoreBtn.textContent = 'もっと見る';
+      } else {
+        loadMoreWrap.style.display = 'none';
+      }
+      loading = false;
+    }
+
+    document.querySelectorAll('.sort-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.sort-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        currentOrder = tab.dataset.order;
+        loadFeed(true);
+      });
+    });
+    document.getElementById('load-more-btn').addEventListener('click', () => loadFeed());
+
+    // ========== 初期化 ==========
+    renderZukan();
+    loadFeed(true);
+  </script>
+</body>
+</html>

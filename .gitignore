@@ -1,0 +1,10 @@
+# Claude設定ファイル（ローカルのみ）
+.claude/
+
+# OS系
+.DS_Store
+Thumbs.db
+
+# エディタ系
+.vscode/
+*.swp

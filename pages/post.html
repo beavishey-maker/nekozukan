@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>写真を投稿 | ねこずかん</title>
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body class="post-page">
+
+  <!-- ヘッダー -->
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="../index.html" class="site-logo">🐱 ねこずかん</a>
+      <nav class="header-nav">
+        <a href="../index.html" class="nav-link">← もどる</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="post-container">
+    <div class="section-header">
+      <div class="section-badge">📸 投稿</div>
+      <h1 class="section-title">うちの子を紹介する</h1>
+      <p class="section-sub">ログイン不要！あなたの愛猫の写真をみんなに見せてあげよう！</p>
+    </div>
+
+    <div class="post-card-form" id="post-form-card">
+
+      <!-- 画像アップロードエリア -->
+      <div class="form-group">
+        <label class="form-label">写真 <span class="required">*</span></label>
+        <div class="drop-zone" id="drop-zone">
+          <div class="drop-zone-content">
+            <div class="drop-zone-icon">🐾</div>
+            <p class="drop-zone-text">
+              <strong>クリックまたはドラッグ＆ドロップ</strong><br>
+              JPG・PNG・GIF（5MB以内）
+            </p>
+          </div>
+          <input type="file" id="file-input" accept="image/jpeg,image/png,image/gif" aria-label="画像を選択">
+          <img id="drop-preview" class="drop-preview" alt="プレビュー">
+        </div>
+        <div class="form-error" id="img-error"></div>
+      </div>
+
+      <!-- 猫の名前 -->
+      <div class="form-group">
+        <label class="form-label" for="cat-name">猫の名前 <span class="required">*</span></label>
+        <input class="form-input" type="text" id="cat-name" placeholder="例：もふもふ" required maxlength="30">
+      </div>
+
+      <!-- 投稿者ニックネーム -->
+      <div class="form-group">
+        <label class="form-label" for="poster-name">あなたのニックネーム</label>
+        <input class="form-input" type="text" id="poster-name" placeholder="省略すると「名無しさん」になります" maxlength="20">
+        <span class="form-hint">ログイン不要・本名でなくてOK</span>
+      </div>
+
+      <!-- 紹介文 -->
+      <div class="form-group">
+        <label class="form-label" for="cat-desc">猫の紹介文</label>
+        <textarea class="form-textarea" id="cat-desc" placeholder="うちの子のかわいいところを教えてね！" maxlength="200" rows="4"></textarea>
+        <div class="char-count"><span id="desc-count">0</span>/200</div>
+      </div>
+
+      <!-- タグ -->
+      <div class="form-group">
+        <label class="form-label" for="cat-tags">タグ</label>
+        <input class="form-input" type="text" id="cat-tags" placeholder="例：茶トラ オス 2歳（スペース区切り）">
+        <span class="form-hint"># をつけなくてもOK。スペースで区切ると複数タグになります</span>
+      </div>
+
+      <!-- プログレスバー -->
+      <div id="progress-wrap" style="display:none">
+        <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:0.25rem">アップロード中...</p>
+        <div class="progress-bar-wrap"><div class="progress-bar" id="progress-bar"></div></div>
+      </div>
+
+      <!-- エラー・投稿ボタン -->
+      <div class="form-error" id="post-error"></div>
+      <button class="btn btn-primary" id="submit-btn" style="justify-content:center;padding:0.9rem">
+        <span class="btn-text">📸 投稿する</span>
+      </button>
+    </div>
+
+    <!-- 成功メッセージ -->
+    <div class="success-msg" id="success-msg">
+      <div class="success-emoji">🎉</div>
+      <h2>投稿できたよ！</h2>
+      <p style="color:var(--text-muted);margin:0.5rem 0 1.5rem">みんながあなたの猫ちゃんを見るのを楽しみにしてるよ</p>
+      <a href="../index.html" class="btn btn-primary">フィードを見る</a>
+    </div>
+  </main>
+
+  <script type="module">
+    import { uploadImage, createPost } from '../js/post.js';
+    import { launchConfetti, showToast } from '../js/feed.js';
+
+    const dropZone = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('file-input');
+    const preview = document.getElementById('drop-preview');
+    const imgError = document.getElementById('img-error');
+    let selectedFile = null;
+
+    // ドラッグ＆ドロップ
+    dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+    dropZone.addEventListener('drop', e => {
+      e.preventDefault();
+      dropZone.classList.remove('dragover');
+      const file = e.dataTransfer.files[0];
+      if (file) validateAndPreview(file);
+    });
+    fileInput.addEventListener('change', () => {
+      if (fileInput.files[0]) validateAndPreview(fileInput.files[0]);
+    });
+
+    function validateAndPreview(file) {
+      imgError.classList.remove('show');
+      const allowed = ['image/jpeg', 'image/png', 'image/gif'];
+      if (!allowed.includes(file.type)) {
+        imgError.textContent = 'JPG・PNG・GIF のみアップロードできます';
+        imgError.classList.add('show'); return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        imgError.textContent = 'ファイルサイズは5MB以内にしてください';
+        imgError.classList.add('show'); return;
+      }
+      selectedFile = file;
+      const reader = new FileReader();
+      reader.onload = () => {
+        preview.src = reader.result;
+        dropZone.classList.add('has-preview');
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // 文字カウント
+    const descEl = document.getElementById('cat-desc');
+    descEl.addEventListener('input', () => {
+      document.getElementById('desc-count').textContent = descEl.value.length;
+    });
+
+    // 投稿送信
+    document.getElementById('submit-btn').addEventListener('click', async () => {
+      const catName = document.getElementById('cat-name').value.trim();
+      const posterName = document.getElementById('poster-name').value.trim();
+      const desc = descEl.value.trim();
+      const tagsRaw = document.getElementById('cat-tags').value.trim();
+      const postError = document.getElementById('post-error');
+      postError.classList.remove('show');
+
+      if (!selectedFile) {
+        imgError.textContent = '写真を選んでください';
+        imgError.classList.add('show'); return;
+      }
+      if (!catName) {
+        postError.textContent = '猫の名前を入力してください';
+        postError.classList.add('show'); return;
+      }
+
+      const tags = tagsRaw
+        ? tagsRaw.split(/\s+/).filter(Boolean).map(t => t.startsWith('#') ? t : '#' + t)
+        : [];
+
+      const btn = document.getElementById('submit-btn');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span> 投稿中...';
+
+      const progressWrap = document.getElementById('progress-wrap');
+      const progressBar = document.getElementById('progress-bar');
+      progressWrap.style.display = 'block';
+      let prog = 0;
+      const progInterval = setInterval(() => {
+        prog = Math.min(prog + Math.random() * 15, 85);
+        progressBar.style.width = prog + '%';
+      }, 200);
+
+      try {
+        const imageUrl = await uploadImage(selectedFile);
+        clearInterval(progInterval);
+        progressBar.style.width = '100%';
+
+        await createPost({ imageUrl, catName, posterName, description: desc, tags });
+
+        setTimeout(() => {
+          document.getElementById('post-form-card').style.display = 'none';
+          document.getElementById('success-msg').classList.add('show');
+          launchConfetti();
+        }, 400);
+      } catch (err) {
+        clearInterval(progInterval);
+        progressWrap.style.display = 'none';
+        progressBar.style.width = '0%';
+        postError.textContent = 'エラーが発生しました：' + (err.message || err);
+        postError.classList.add('show');
+        btn.disabled = false;
+        btn.innerHTML = '<span class="btn-text">📸 投稿する</span>';
+      }
+    });
+  </script>
+</body>
+</html>
