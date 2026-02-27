@@ -1,2 +1,7 @@
 スパベース：パスワード　yuanki11230216
 Project name：nekozukan
+
+
+Claudecode 起動コマンド：claude --model sonnet
+
+GIthub:googleでサインイン
